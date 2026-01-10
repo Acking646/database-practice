@@ -494,90 +494,206 @@ def ResCommentList():
     return render_template('ResCommentList.html', username=username, RESTAURANT=restaurant, messages=msg)
 
 # 购物车
-@app.route('/myOrder',methods=['GET', 'POST'])
+# @app.route('/myOrder',methods=['GET', 'POST'])
+# def shoppingCartPage():
+#     if request.method == 'GET':
+#         print("myOrder-->GET")
+#         db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
+#         cursor = db.cursor()
+#         try:
+#             cursor.execute("use appDB")
+#         except:
+#             print("Error: unable to use database!")
+#         # 查询
+#         sql = "SELECT * FROM SHOPPINGCART"
+#         cursor.execute(sql)
+#         res = cursor.fetchall()
+#         # print(res)
+#         # print(len(res))
+#         if len(res) != 0:
+#             msg = "done"
+#             print(msg)
+#             print(len(res))
+#             return render_template('myOrder.html', username=username, result=res, messages=msg)
+#         else:
+#             print("NULL")
+#             msg = "none"
+#             return render_template('myOrder.html', username=username, messages=msg)
+#     elif request.form["action"] == "加入购物车":
+#         print("myOrder-->加入购物车")
+#         restuarant = request.form['restaurant']
+#         dishname = request.form['dishname']
+#         price = request.form['price']
+#         img_res = request.form['img_res']
+#         db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
+#         cursor = db.cursor()
+#         try:
+#             cursor.execute("use appDB")
+#         except:
+#             print("Error: unable to use database!")
+#         sql1 = "insert into SHOPPINGCART  values ('{}','{}','{}','{}','{}') ".format(username,restuarant,dishname,price,img_res)
+#         cursor.execute(sql1)
+#         db.commit()  # <--- 必须加上这一行！！！
+#         res1 = cursor.fetchall()
+#         print(len(res1))
+#         sql = "SELECT * FROM SHOPPINGCART"
+#         cursor.execute(sql)
+#         res = cursor.fetchall()
+#         # print(res)
+#         # print(len(res))
+#         if len(res) != 0:
+#             msg = "done"
+#             print(msg)
+#             print(len(res))
+#             return render_template('myOrder.html', username=username, result=res, messages=msg)
+#         else:
+#             print("NULL")
+#             msg = "none"
+#         return render_template('myOrder.html', username=username, messages=msg)
+
+
+
+    # elif request.form["action"] == "结算":
+    #     print("结算啦")
+    #     db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
+    #     cursor = db.cursor()
+    #     try:
+    #         cursor.execute("use appDB")
+    #     except:
+    #         print("Error: unable to use database!")
+    #     '''
+    #     这下面
+    #     '''
+    #     restuarant = request.form['restaurant']
+    #     print(restaurant)
+    #     dishname = request.form['dishname']
+    #     price = request.form['price']
+    #     img_res = request.form['img_res']
+    #     mode = request.form['mode']
+    #     print("==*==")
+    #     print(mode)
+    #
+    #     if mode == 1:
+    #         print("堂食")
+    #
+    #     else:
+    #         print("外送")
+    #     return render_template('index.html')
+
+    # 购物车页面 (完整修复版)
+@app.route('/myOrder', methods=['GET', 'POST'])
 def shoppingCartPage():
+    # 1. 如果是 GET 请求，显示购物车内容
     if request.method == 'GET':
         print("myOrder-->GET")
         db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
         cursor = db.cursor()
         try:
-            cursor.execute("use appDB")
-        except:
-            print("Error: unable to use database!")
-        # 查询
-        sql = "SELECT * FROM SHOPPINGCART"
-        cursor.execute(sql)
-        res = cursor.fetchall()
-        # print(res)
-        # print(len(res))
-        if len(res) != 0:
-            msg = "done"
-            print(msg)
-            print(len(res))
+            sql = "SELECT * FROM SHOPPINGCART WHERE username = '{}'".format(username)
+            cursor.execute(sql)
+            res = cursor.fetchall()
+            msg = "done" if len(res) > 0 else "empty"
             return render_template('myOrder.html', username=username, result=res, messages=msg)
-        else:
-            print("NULL")
-            msg = "none"
-            return render_template('myOrder.html', username=username, messages=msg)
-    elif request.form["action"] == "加入购物车":
-        print("myOrder-->加入购物车")
-        restuarant = request.form['restaurant']
-        dishname = request.form['dishname']
-        price = request.form['price']
-        img_res = request.form['img_res']
+        except Exception as e:
+            print(e)
+            return render_template('myOrder.html', username=username, messages="fail")
+
+    # 2. 如果是 POST 请求 (加入购物车、结算、删除)
+    action = request.form.get("action")
+    print("Action received: ", action)
+
+    # === 功能 A: 加入购物车 ===
+    if action == "加入购物车":
+        print("正在加入购物车...")
+        restaurant = request.form.get('restaurant')
+        dishname = request.form.get('dishname')
+        price = request.form.get('price')
+        img_res = request.form.get('img_res')
+
         db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
         cursor = db.cursor()
         try:
-            cursor.execute("use appDB")
-        except:
-            print("Error: unable to use database!")
-        sql1 = "insert into SHOPPINGCART  values ('{}','{}','{}','{}','{}') ".format(username,restuarant,dishname,price,img_res)
-        cursor.execute(sql1)
-        res1 = cursor.fetchall()
-        print(len(res1))
-        sql = "SELECT * FROM SHOPPINGCART"
-        cursor.execute(sql)
-        res = cursor.fetchall()
-        # print(res)
-        # print(len(res))
-        if len(res) != 0:
-            msg = "done"
-            print(msg)
-            print(len(res))
-            return render_template('myOrder.html', username=username, result=res, messages=msg)
-        else:
-            print("NULL")
-            msg = "none"
-        return render_template('myOrder.html', username=username, messages=msg)
+            # 插入数据
+            sql_insert = "insert into SHOPPINGCART values ('{}','{}','{}','{}','{}') ".format(username, restaurant,
+                                                                                              dishname, price,
+                                                                                              img_res)
+            cursor.execute(sql_insert)
+            db.commit()  # <--- 【关键修复】必须提交！否则Navicat看不见，结算也查不到
+            print("加入成功，已Commit")
 
-    elif request.form["action"] == "结算":
-        print("结算啦")
+            # 重新查询并在当前页显示
+            cursor.execute("SELECT * FROM SHOPPINGCART WHERE username = '{}'".format(username))
+            res = cursor.fetchall()
+            return render_template('myOrder.html', username=username, result=res, messages="done")
+        except Exception as e:
+            print("加入购物车失败:", e)
+            db.rollback()
+            return render_template('myOrder.html', username=username, messages="fail")
+
+    # === 功能 B: 结算 ===
+    elif action == "结算":
+        print("====== 开始结算 ======")
+        db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
+        cursor = db.cursor()
+
+        try:
+            # 1. 先查购物车有没有东西
+            cursor.execute("SELECT * FROM SHOPPINGCART WHERE username = '{}'".format(username))
+            cart_items = cursor.fetchall()
+
+            if len(cart_items) == 0:
+                print("购物车为空，无法结算")
+                return render_template('myOrder.html', username=username, messages="empty")
+
+            import time, random, datetime
+            now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            # 2. 遍历生成订单
+            for item in cart_items:
+                r_rest = item[1]
+                r_dish = item[2]
+                r_price = item[3]
+                orderID = "{}{}".format(int(time.time()), random.randint(100, 999))
+
+                sql_insert = """
+                    INSERT INTO ORDER_COMMENT 
+                    (orderID, username, restaurant, dishname, cost, isFinished, text, c_rank, tansactiontime) 
+                    VALUES ('{}', '{}', '{}', '{}', {}, 0, '', 5, '{}')
+                """.format(orderID, username, r_rest, r_dish, r_price, now_time)
+                cursor.execute(sql_insert)
+                print("生成订单: " + r_dish)
+
+            # 3. 清空购物车
+            cursor.execute("DELETE FROM SHOPPINGCART WHERE username = '{}'".format(username))
+
+            # 4. 提交事务 (最重要的一步)
+            db.commit()
+            print("✅ 结算完成，跳转订单页")
+            return redirect(url_for('OrderPage'))
+
+        except Exception as e:
+            print("结算报错:", e)
+            db.rollback()
+            return render_template('myOrder.html', username=username, messages="fail_sql")
+
+    # === 功能 C: 删除 (如果你修改前端传回 delete 动作) ===
+    elif action == "delete":
+        # 注意：这需要前端配合修改才能生效，这里先写好逻辑
+        print("删除购物车商品")
+        dishname = request.form.get('dishname')
         db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
         cursor = db.cursor()
         try:
-            cursor.execute("use appDB")
+            sql = "DELETE FROM SHOPPINGCART WHERE username='{}' AND dishname='{}'".format(username, dishname)
+            cursor.execute(sql)
+            db.commit()
+            return redirect(url_for('shoppingCartPage'))  # 刷新页面
         except:
-            print("Error: unable to use database!")
-        '''
-        这下面
-        '''
-        restuarant = request.form['restaurant']
-        print(restaurant)
-        dishname = request.form['dishname']
-        price = request.form['price']
-        img_res = request.form['img_res']
-        mode = request.form['mode']
-        print("==*==")
-        print(mode)
+            return render_template('myOrder.html', username=username, messages="fail")
 
-        if mode == 1:
-            print("堂食")
-
-        else:
-            print("外送")
-        return render_template('index.html')
     else:
-        print("咋回事")
+        # 其他情况
+        print("未知操作")
         return render_template('index.html')
 
 
@@ -752,34 +868,58 @@ def OrderPage():
             print("NULL")
             msg = "none"
         return render_template('OrderPage.html', username=username, messages=msg, notFinishedNum=notFinishedNum)
+    # elif request.form["action"] == "确认收货":
+    #     db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
+    #     cursor = db.cursor()
+    #     try:
+    #         cursor.execute("use appDB")
+    #     except:
+    #         print("Error: unable to use database!")
+    #     print("用户要确认收货啦")
+    #     orderID = request.form['orderID']
+    #     print(orderID)
+    #     sql1 = "Update ORDER_COMMENT SET isFinished = 1, text = '' WHERE orderID = '%s' " % orderID
+    #     print(sql1)
+    #     cursor.execute(sql1)
+    #     db.commit()
+    #
+    #     sql2 = "select * from ORDER_COMMENT WHERE orderID = '%s' " % orderID
+    #     cursor.execute(sql2)
+    #     res1 = cursor.fetchone()
+    #     restaurant = res1[1]
+    #     dishname = res1[2]
+    #     print("{} {} 销量+1".format(dishname, restaurant))
+    #
+    #     sql = "Update DISHES SET sales = sales+1 WHERE dishname = '{}' AND restaurant = '{}'" .format(dishname, restaurant)
+    #     print(sql)
+    #     cursor.execute(sql)
+    #     res = cursor.fetchall()
+    #     print(res)
+    #     msg = "UpdateSucceed"
+    #     return render_template('OrderPage.html', username=username, messages=msg)
     elif request.form["action"] == "确认收货":
+        # 1. 建立连接 (务必确认密码正确)
         db = MySQLdb.connect("localhost", "root", "root", "appDB", charset='utf8')
         cursor = db.cursor()
-        try:
-            cursor.execute("use appDB")
-        except:
-            print("Error: unable to use database!")
-        print("用户要确认收货啦")
+
+        print("用户要确认收货 - 触发器测试")
         orderID = request.form['orderID']
-        print(orderID)
-        sql1 = "Update ORDER_COMMENT SET isFinished = 1, text = '' WHERE orderID = '%s' " % orderID
-        print(sql1)
-        cursor.execute(sql1)
-        db.commit()
 
-        sql2 = "select * from ORDER_COMMENT WHERE orderID = '%s' " % orderID
-        cursor.execute(sql2)
-        res1 = cursor.fetchone()
-        restaurant = res1[1]
-        dishname = res1[2]
-        print("{} {} 销量+1".format(dishname, restaurant))
+        # 2. 仅更新状态
+        # 这一行执行后，数据库底层的 Trigger 就会立即工作，自动给对应菜品销量+1
+        sql = "Update ORDER_COMMENT SET isFinished = 1, text = '' WHERE orderID = '%s' " % orderID
 
-        sql = "Update DISHES SET sales = sales+1 WHERE dishname = '{}' AND restaurant = '{}'" .format(dishname, restaurant)
-        print(sql)
-        cursor.execute(sql)
-        res = cursor.fetchall()
-        print(res)
-        msg = "UpdateSucceed"
+        try:
+            cursor.execute(sql)
+            db.commit()
+            print("订单状态已更新，触发器应已自动增加销量。")
+            msg = "UpdateSucceed"
+        except Exception as e:
+            print("操作失败:", e)
+            db.rollback()
+            msg = "fail"
+
+        # 3. 返回页面
         return render_template('OrderPage.html', username=username, messages=msg)
 
     else:
@@ -1444,5 +1584,8 @@ def MerchantOrderPage():
         return render_template('MerchantOrderPage.html', username=username, messages=msg)
 
 
+# if __name__ == '__main__':
+#     app.run(host='localhost', port='5000')
 if __name__ == '__main__':
-    app.run(host='localhost', port='5000')
+    # 开启 debug=True 后，你修改代码保存，程序会自动重启，且网页报错会显示详细信息
+    app.run(host='localhost', port='5000', debug=True)
